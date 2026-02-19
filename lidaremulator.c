@@ -53,6 +53,7 @@ static LidarEmulatorApp* LidarEmulatorApp_alloc() {
 
     lidaremulator->ir_output = LidarEmulatorIrOutputInternal;
     lidaremulator->ir_ext_5v_enabled = true;
+    lidaremulator->transmit_thread = NULL;
     lidaremulator_load_settings(lidaremulator);
 
     return lidaremulator;

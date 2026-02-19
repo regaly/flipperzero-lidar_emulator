@@ -1,5 +1,6 @@
 #pragma once
 
+#include <furi.h>
 #include <gui/gui.h>
 #include <gui/view.h>
 #include <gui/view_dispatcher.h>
@@ -41,6 +42,9 @@ struct LidarEmulatorApp {
 
     /** Enable 5V on extension header when using external IR */
     bool ir_ext_5v_enabled;
+
+    /** Transmit worker thread (non-null while transmitting) */
+    FuriThread* transmit_thread;
 };
 
 typedef struct LidarEmulatorApp LidarEmulatorApp;

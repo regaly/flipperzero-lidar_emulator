@@ -1,6 +1,8 @@
 #include "../lidaremulator_app_i.h"
 #include <furi.h>
+#include <furi_hal_light.h>
 #include <gui/gui.h>
+#include <power/power_service/power.h>
 #include <gui/modules/submenu.h>
 #include <gui/scene_manager.h>
 #include <gui/view_dispatcher.h>
@@ -81,8 +83,18 @@ bool lidaremulator_scene_predefined_guns_view_on_event(InputEvent* event, void* 
         furi_hal_light_set(LightGreen,0);
         furi_hal_light_set(LightBlue,255);
 
-        const GpioPin* const pin_led = &gpio_infrared_tx;
+        const GpioPin* const pin_led = (lidaremulator->ir_output == LidarEmulatorIrOutputExternal)
+                                           ? &gpio_ext_pa7
+                                           : &gpio_infrared_tx;
         const GpioPin* const pin_ok = &gpio_button_ok;
+
+        /* Enable 5V on extension header when using external IR (if configured) */
+        if(lidaremulator->ir_output == LidarEmulatorIrOutputExternal &&
+           lidaremulator->ir_ext_5v_enabled) {
+            Power* power = furi_record_open(RECORD_POWER);
+            power_enable_otg(power, true);
+            furi_record_close(RECORD_POWER);
+        }
 
         timing = guns[idx].timing-1;
         furi_hal_gpio_init(pin_led, GpioModeOutputPushPull, GpioPullNo, GpioSpeedVeryHigh);
@@ -118,11 +130,19 @@ bool lidaremulator_scene_predefined_guns_view_on_event(InputEvent* event, void* 
 
         furi_hal_gpio_init_simple(pin_led, GpioModeAnalog);
 
+        /* Disable 5V when done transmitting with external IR (if it was enabled) */
+        if(lidaremulator->ir_output == LidarEmulatorIrOutputExternal &&
+           lidaremulator->ir_ext_5v_enabled) {
+            Power* power = furi_record_open(RECORD_POWER);
+            power_enable_otg(power, false);
+            furi_record_close(RECORD_POWER);
+        }
+
         consumed = true;
     }
 
     if (event->type == InputTypeRelease && event->key == InputKeyOk) {
-        
+
         furi_hal_light_set(LightRed,0);
         furi_hal_light_set(LightGreen,0);
         furi_hal_light_set(LightBlue,0);

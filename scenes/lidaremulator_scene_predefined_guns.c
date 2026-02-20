@@ -238,6 +238,9 @@ void lidaremulator_scene_predefined_guns_on_exit(void* context) {
         furi_thread_join(lidaremulator->transmit_thread);
         furi_thread_free(lidaremulator->transmit_thread);
         lidaremulator->transmit_thread = NULL;
+        furi_hal_light_set(LightRed, 0);
+        furi_hal_light_set(LightGreen, 0);
+        furi_hal_light_set(LightBlue, 0);
     }
 
     view_hijacker_detach_from_view(lidaremulator->view_hijacker);
